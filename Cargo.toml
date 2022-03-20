@@ -1,0 +1,6 @@
+[workspace]
+
+members = [
+    "rdr-core", "rdr-zeromq", "rdr-web", "rdr-pyo3"
+]
+

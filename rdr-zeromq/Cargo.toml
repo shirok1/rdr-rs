@@ -1,0 +1,13 @@
+[package]
+name = "rdr-zeromq"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+rdr-core = { path = "../rdr-core" }
+zeromq = "*"
+tokio = { version = "1", features = ["full"] }
+async-trait = "*"
+bytes = "1"
