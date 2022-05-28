@@ -11,6 +11,6 @@ fn main() {
         )
         .out_dir("src/message")
         .customize(protobuf_codegen::Customize::default()
-            .tokio_bytes_for_bytes(true))
+            .tokio_bytes(true))
         .run_from_script();
 }
