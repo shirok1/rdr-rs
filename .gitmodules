@@ -1,0 +1,3 @@
+[submodule "egui_nodes"]
+	path = egui_nodes
+	url = https://github.com/shirok1/egui_nodes.git

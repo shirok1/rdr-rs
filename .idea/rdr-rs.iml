@@ -6,6 +6,11 @@
       <sourceFolder url="file://$MODULE_DIR$/rdr-web/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/rdr-zeromq/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/rdr-pyo3/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/rdr-compose/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/rdr-demo/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/rdr-compose-egui/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/egui_nodes/examples" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/egui_nodes/src" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/target" />
     </content>
     <orderEntry type="inheritedJdk" />

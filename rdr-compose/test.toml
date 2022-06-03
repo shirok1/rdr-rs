@@ -1,0 +1,57 @@
+version = "0.1.0"
+conda_path = "/home/shiroki/miniconda3/bin/conda"
+links = [[101, 200], [103, 202], [201, 402], [101, 400]]
+
+[[executables]]
+name = "相机进程"
+path = "./demo"
+inputs = []
+outputs = ["图像输出", "深度输出"]
+arg_template = ""
+
+[executables.env_template]
+
+[executables.exe_type]
+type = "PythonScript"
+python_env_type = "System"
+
+[[executables]]
+name = "神经网络"
+path = "./untitled"
+inputs = ["图像输入", "深度输入"]
+outputs = ["检测到的车"]
+arg_template = ""
+
+[executables.env_template]
+
+[executables.exe_type]
+type = "PythonScript"
+python_env_type = "Conda"
+conda_path = "/home/shiroki/miniconda3/bin/conda"
+conda_env = "/home/shiroki/miniconda3"
+
+[[executables]]
+name = "试验平台"
+path = "./untitled"
+inputs = []
+outputs = []
+arg_template = ""
+
+[executables.env_template]
+
+[executables.exe_type]
+type = "PythonScript"
+python_env_type = "VirtualEnv"
+venv = "/home/shiroki/.cache/pypoetry/virtualenvs/pyrdr-nKNR39We-py3.10/"
+
+[[executables]]
+name = "显示前端"
+path = "./untitled"
+inputs = ["图像", "检测到的车"]
+outputs = []
+arg_template = ""
+
+[executables.env_template]
+
+[executables.exe_type]
+type = "CustomExecutable"
