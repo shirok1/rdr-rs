@@ -183,9 +183,9 @@ impl MyEguiApp {
                                         for pip_pkg in ["pyzmq", "numpy", "protobuf"] {
                                             self.python_test_result.push_str(
                                                 &if let Some(freeze) = pkgs.iter().find(|s| s.starts_with(pip_pkg)) {
-                                                    format!("\n找到 {}", freeze)
+                                                    format!("\n找到 {freeze}")
                                                 } else {
-                                                    format!("\n*{} 未安装！*", pip_pkg)
+                                                    format!("\n*{pip_pkg} 未安装！*")
                                                 })
                                         }
                                     } else {
@@ -194,11 +194,11 @@ impl MyEguiApp {
                                     for native_module in ["cv2"] {
                                         self.python_test_result.push_str(
                                             &if let Ok(version) = env.run_and_get_result(|cmd| {
-                                                cmd.args(["-c", &format!("import {}; print({}.__version__)", native_module, native_module)])
+                                                cmd.args(["-c", &format!("import {native_module}; print({native_module}.__version__)")])
                                             }) {
-                                                format!("\n找到 {}=={}", native_module, version)
+                                                format!("\n找到 {native_module}=={version}")
                                             } else {
-                                                format!("\n*{} 未安装！*", native_module)
+                                                format!("\n*{native_module} 未安装！*")
                                             })
                                     }
                                 } else {
