@@ -1,6 +1,6 @@
 use eframe::egui;
 use egui::{CentralPanel, Grid, SidePanel, RichText, TopBottomPanel};
-use rdr_compose::ComposeFile;
+use rdr_compose::{ComposeFile, index_to_attribute_id};
 use rdr_compose::model::{ExecutableType, PythonEnvironment};
 use rdr_compose_egui::python_management::get_conda_envs;
 
@@ -49,10 +49,6 @@ fn setup_custom_fonts(ctx: &egui::Context) {
     // Tell egui to use these fonts:
     ctx.set_fonts(fonts);
 }
-
-fn attribute_id_to_index(id: usize) -> (usize, usize) { (id / 100 + 1, id % 100 / 2) }
-
-fn index_to_attribute_id(exe_index: usize, port_index: usize) -> usize { (exe_index + 1) * 100 + port_index * 2 }
 
 impl eframe::App for MyEguiApp {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
