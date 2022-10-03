@@ -5,20 +5,30 @@ use rdr_compose::model::{ExecutableType, PythonEnvironment};
 use rdr_compose_egui::python_management::get_conda_envs;
 
 fn main() {
+    let runtime = tokio::runtime::Builder::new_current_thread().enable_all().build().unwrap();
+
     let native_options = eframe::NativeOptions::default();
-    eframe::run_native("连连看", native_options, Box::new(|cc| Box::new(MyEguiApp::new(cc))));
+    eframe::run_native("连连看", native_options, Box::new(|cc| Box::new(
+        EguiComposer::new(cc, runtime))));
 }
 
 #[derive(Default)]
-struct MyEguiApp {
-    compose_path: String,
-    compose: Option<ComposeFile>,
-    conda_envs: Option<Vec<String>>,
+struct GuiStatus {
     selected_executable: Option<usize>,
-    giving_up: bool,
     python_test_result: String,
 
     node_context: egui_nodes::Context,
+}
+
+struct EguiComposer {
+    compose_path: String,
+    compose: Option<ComposeFile>,
+    giving_up: bool,
+    conda_envs: Option<Vec<String>>,
+
+    status: GuiStatus,
+
+    async_runtime: tokio::runtime::Runtime,
 }
 
 fn setup_custom_fonts(ctx: &egui::Context) {
@@ -50,16 +60,16 @@ fn setup_custom_fonts(ctx: &egui::Context) {
     ctx.set_fonts(fonts);
 }
 
-impl eframe::App for MyEguiApp {
+impl eframe::App for EguiComposer {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
         if self.giving_up {
             self.compose = None;
             self.giving_up = false;
         }
 
-        if let Some(select) = self.selected_executable {
+        if let Some(select) = self.status.selected_executable {
             if !matches!(&self.compose,Some(ComposeFile{executables:ex,..} )if ex.len() > select) {
-                self.selected_executable = None;
+                self.status.selected_executable = None;
             }
         }
 
@@ -70,7 +80,8 @@ impl eframe::App for MyEguiApp {
             use egui_nodes::{NodeConstructor, LinkArgs};
             ui.heading("连连看");
             if let Some(compose) = &mut self.compose {
-                self.node_context.show(compose.executables.iter().enumerate().map(|(exe_index, exe)| {
+                let node_context = &mut self.status.node_context;
+                node_context.show(compose.executables.iter().enumerate().map(|(exe_index, exe)| {
                     let node = NodeConstructor::new(exe_index, Default::default())
                         .with_origin([225.0, 150.0].into())
                         .with_title(|ui| ui.label(&exe.name))
@@ -84,10 +95,10 @@ impl eframe::App for MyEguiApp {
                     });
                     node
                 }), compose.links.iter().enumerate().map(|(i, (start, end))| (i, *start, *end, LinkArgs::default())), ui);
-                if let Some(idx) = self.node_context.link_destroyed() {
+                if let Some(idx) = node_context.link_destroyed() {
                     compose.links.remove(idx);
                 }
-                if let Some((start, end, _)) = self.node_context.link_created() {
+                if let Some((start, end, _)) = node_context.link_created() {
                     compose.links.push((start, end))
                 }
             }
@@ -95,23 +106,28 @@ impl eframe::App for MyEguiApp {
     }
 }
 
-impl MyEguiApp {
-    fn new(cc: &eframe::CreationContext<'_>) -> Self {
+impl EguiComposer {
+    fn new(cc: &eframe::CreationContext<'_>, runtime: tokio::runtime::Runtime) -> Self {
         setup_custom_fonts(&cc.egui_ctx);
         let mut node_context = egui_nodes::Context::default();
         node_context.style = egui_nodes::Style { colors: egui_nodes::ColorStyle::colors_light(), ..Default::default() };
         // node_context.attribute_flag_push(egui_nodes::AttributeFlags::EnableLinkDetachWithDragClick);
         Self {
             compose_path: "/home/shiroki/code/rdr-rs/rdr-compose/test.toml".to_owned(),
-            python_test_result: "<-点击左侧按钮进行测试".to_owned(),
-
-            node_context,
-            ..Self::default()
+            compose: None,
+            giving_up: false,
+            conda_envs: None,
+            status: GuiStatus {
+                python_test_result: "<-点击左侧按钮进行测试".to_owned(),
+                node_context,
+                ..GuiStatus::default()
+            },
+            async_runtime: runtime,
         }
     }
 
     fn property_panel(&mut self, ctx: &egui::Context) {
-        if let (Some(selected), Some(compose)) = (&self.selected_executable, &mut self.compose) {
+        if let (Some(selected), Some(compose)) = (&self.status.selected_executable, &mut self.compose) {
             SidePanel::right("executable_property").show(ctx, |ui| {
                 let current = compose.executables.get_mut(*selected).unwrap();
                 Grid::new("executable_property_grid")
@@ -177,11 +193,12 @@ impl MyEguiApp {
                             }
 
                             if ui.button("测试 Python 环境").clicked() {
-                                if let Ok(py_version) = env.get_py_version() {
-                                    self.python_test_result = py_version.trim().to_string();
-                                    if let Ok(pkgs) = env.get_pip_packages() {
+                                // env.
+                                if let Ok(py_version) = self.async_runtime.block_on(env.get_py_version()) {
+                                    self.status.python_test_result = py_version.trim().to_string();
+                                    if let Ok(pkgs) = self.async_runtime.block_on(env.get_pip_packages()) {
                                         for pip_pkg in ["pyzmq", "numpy", "protobuf"] {
-                                            self.python_test_result.push_str(
+                                            self.status.python_test_result.push_str(
                                                 &if let Some(freeze) = pkgs.iter().find(|s| s.starts_with(pip_pkg)) {
                                                     format!("\n找到 {freeze}")
                                                 } else {
@@ -189,24 +206,24 @@ impl MyEguiApp {
                                                 })
                                         }
                                     } else {
-                                        self.python_test_result.push_str("\n*未能获取 pip 包信息！*")
+                                        self.status.python_test_result.push_str("\n*未能获取 pip 包信息！*")
                                     }
                                     for native_module in ["cv2"] {
-                                        self.python_test_result.push_str(
-                                            &if let Ok(version) = env.run_and_get_result(|cmd| {
+                                        self.status.python_test_result.push_str(
+                                            &if let Ok(version) = self.async_runtime.block_on(env.run_and_get_result_async(|cmd| {
                                                 cmd.args(["-c", &format!("import {native_module}; print({native_module}.__version__)")])
-                                            }) {
+                                            })) {
                                                 format!("\n找到 {native_module}=={version}")
                                             } else {
                                                 format!("\n*{native_module} 未安装！*")
                                             })
                                     }
                                 } else {
-                                    self.python_test_result = "版本测试失败！".to_string();
+                                    self.status.python_test_result = "版本测试失败！".to_string();
                                 }
                             };
                             ui.vertical_centered(|ui| {
-                                ui.label(&self.python_test_result);
+                                ui.label(&self.status.python_test_result);
                             });
                             ui.end_row();
                         }
@@ -243,9 +260,9 @@ impl MyEguiApp {
                     ui.horizontal(|ui| {
                         ui.label(format!("已记录了 {} 个节点程序", compose.executables.len()));
                         ui.separator();
-                        ui.add_enabled_ui(self.selected_executable.is_some(), |ui| {
+                        ui.add_enabled_ui(self.status.selected_executable.is_some(), |ui| {
                             if ui.button("删除").clicked() {
-                                compose.executables.remove(self.selected_executable.unwrap());
+                                compose.executables.remove(self.status.selected_executable.unwrap());
                             }
                         });
                         if ui.button("添加").clicked() {
@@ -271,7 +288,7 @@ impl MyEguiApp {
                         .body(|mut body| {
                             for (index, rec) in compose.executables.iter().enumerate() {
                                 body.row(18.0, |mut row| {
-                                    let is_current = self.selected_executable == Some(index);
+                                    let is_current = self.status.selected_executable == Some(index);
                                     let try_high_light = |txt: &str| {
                                         if is_current {
                                             RichText::new(txt).underline()
@@ -281,7 +298,7 @@ impl MyEguiApp {
                                     };
                                     row.col(|ui| {
                                         if ui.button(try_high_light(&rec.name)).clicked() {
-                                            self.selected_executable = Some(index)
+                                            self.status.selected_executable = Some(index)
                                         }
                                     });
                                     row.col(|ui| {

@@ -17,6 +17,7 @@ pub trait Server {
         self.socket_send(ZmqMessage::from(msg.write_to_bytes().unwrap())).await
     }
     async fn socket_send(&mut self, msg: ZmqMessage) -> ZmqResult<()>;
+    fn get_socket(&self) -> &PubSocket;
 }
 
 #[async_trait]
@@ -24,7 +25,7 @@ pub trait Client {
     type TMessage: Message;
 
     async fn create_socket(endpoint: &str) -> SubSocket {
-        let mut sub_socket = zeromq::SubSocket::new();
+        let mut sub_socket = SubSocket::new();
         sub_socket.connect(endpoint).await.unwrap();
         sub_socket
     }

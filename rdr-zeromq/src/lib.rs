@@ -11,4 +11,6 @@ mod r#macro;
 
 pub mod prelude {
     pub use super::traits::*;
+    pub use rdr_core::prelude::*;
 }
+pub use zeromq::ZmqError;

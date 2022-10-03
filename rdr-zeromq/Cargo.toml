@@ -8,6 +8,6 @@ edition = "2021"
 [dependencies]
 rdr-core = { path = "../rdr-core" }
 zeromq = "*"
-tokio = { version = "1", features = ["full"] }
+#tokio = { version = "1", features = ["full"] }
 async-trait = "*"
 bytes = "1"

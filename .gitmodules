@@ -1,3 +1,6 @@
 [submodule "egui_nodes"]
 	path = egui_nodes
 	url = https://github.com/shirok1/egui_nodes.git
+[submodule "rdr-core/src/message/proto"]
+	path = rdr-core/src/message/proto
+	url = https://github.com/shirok1/rdr-proto

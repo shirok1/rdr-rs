@@ -16,6 +16,7 @@ macro_rules! def_server {
             async fn socket_send(&mut self, msg: ZmqMessage) -> ZmqResult<()> {
                 self.socket.send(msg).await
             }
+            fn get_socket(&self) -> &zeromq::PubSocket { &self.socket }
         }
     };
 }
