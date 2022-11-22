@@ -4,7 +4,6 @@ members = [
     "rdr-core", "rdr-zeromq", "rdr-demo",
     # "rdr-web",
     # "rdr-pyo3",
-    "rdr-compose",
-    "egui_nodes", "rdr-compose-egui"
+    "rdr-compose"
 ]
 
