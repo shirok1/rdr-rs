@@ -3,5 +3,6 @@
   <component name="VcsDirectoryMappings">
     <mapping directory="$PROJECT_DIR$" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/egui_nodes" vcs="Git" />
+    <mapping directory="$PROJECT_DIR$/rdr-core/src/message/proto" vcs="Git" />
   </component>
 </project>

@@ -5,15 +5,15 @@ edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [lib]
-name = "rdr_pyo3"
+name = "rdr"
 crate-type = ["cdylib"]
 
 [dependencies]
 rdr-core = { path = "../rdr-core" }
 rdr-zeromq = { path = "../rdr-zeromq" }
-pyo3 = { version = "0.15", features = ["extension-module"] }
-pyo3-asyncio = { version = "0.15", features = ["tokio-runtime"] }
+pyo3 = { version = "0.17", features = ["extension-module"] }
+pyo3-asyncio = { version = "0.17", features = ["tokio-runtime"] }
 tokio = "1"
 bytes = "1"
-numpy = "0.15"
+numpy = "0.17"
 image = "0"

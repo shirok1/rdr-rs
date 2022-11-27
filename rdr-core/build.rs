@@ -3,7 +3,7 @@ use std::fs;
 
 fn main() {
     protobuf_codegen::Codegen::new()
-        .includes(&["src/message/proto"])
+        .includes(["src"])
         .inputs(fs::read_dir("src/message/proto").unwrap()
             .filter_map(|rs| rs.ok().map(|entry| entry.path()))
             .filter(|path| matches!(
